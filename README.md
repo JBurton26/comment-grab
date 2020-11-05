@@ -1,2 +1,2 @@
 # cheapyr-web-app
-Web Application Component of Cheapyr
+Cheapyr will be a price comparison web application that works by scraping pricing information from sites such as Amazon and Ebay.
