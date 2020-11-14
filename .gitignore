@@ -1,0 +1,8 @@
+#Data files and Databases
+*.dat
+results/
+
+
+#Log Files
+*.log
+geckodriver.txt
