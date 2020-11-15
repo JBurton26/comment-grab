@@ -1,2 +1,2 @@
 # cheapyr-web-app
-Cheapyr will be a price comparison web application that works by scraping pricing information from sites such as Amazon and Ebay.
+Cheapyr will be a tool for analysing prices of computer components using web scraping techniques.
