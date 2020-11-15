@@ -15,7 +15,9 @@ driver.get("""https://www.nvidia.com/en-gb/shop/geforce/?page=1&limit=9&locale=e
 page = driver.page_source
 soup = BeautifulSoup(page, 'html5lib')
 titles = soup.find_all("h2")
+prices = soup.find_all("div", "price clearfix")
 # print(title)
 # print(title[2].get_text())
-for title in titles:
-    print(title.get_text())
+for i in range(len(titles)):
+    print(titles[i].get_text())
+    print(prices[i].get_text().strip()[1:])
