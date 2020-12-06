@@ -7,8 +7,7 @@ from os import path
 
 
 def scrapeNvidia(keyword):
-    final_titles = []
-    final_costs = []
+    data = []
     options = FirefoxOptions()
     fp = webdriver.FirefoxProfile()
     fp.set_preference("javascript.enabled", True)
@@ -16,6 +15,7 @@ def scrapeNvidia(keyword):
     driver = webdriver.Firefox(firefox_profile=fp, options=options)
     driver.get("""https://www.nvidia.com/en-gb/shop/geforce/?page=1&limit=100&locale=en-gb&search="""+keyword+"""&sorting=fg""")
     time.sleep(3)
+    # Code not necessary for running
     """
     for x in range(1):
         try:
@@ -33,13 +33,14 @@ def scrapeNvidia(keyword):
     soup = BeautifulSoup(page, 'html5lib')
     titles = soup.find_all("h2")
     prices = soup.find_all("div", "price clearfix")
-    # TODO Fix Indexing on certain searches
-    print("Num Titles: "+str(len(titles)))
-    print("Num Prices: "+str(len(prices)))
-    banned_words = ['SSD', '"', 'i5', 'i7', 'i9', 'RYZEN']
+    specs = soup.find_all("div", "specs-container")
+    banned_words = ['SSD', '"', 'i5', 'i7', 'i9', 'RYZEN']  # Filters out laptops and other devices.
     for i in range(len(titles)):
+        new_data = []
         temp_title = titles[i].getText().strip()
         temp_cost = prices[i].getText().strip()
+        temp_specs = []
+        temp_specs_set = specs[i].find_all("div", "specs")     # [Cooling, Clock, MEM Size]
         temp_pass = False
         for word in banned_words:
             if word in temp_title:
@@ -47,14 +48,16 @@ def scrapeNvidia(keyword):
                 break
         if(temp_pass):
             continue
-        print(temp_title)
-        final_titles.append(temp_title)
-        print(temp_cost)
-        final_costs.append(temp_cost)
+        new_data.append(temp_title)
+        new_data.append(temp_cost[1:])
+        temp_specs.append(temp_specs_set[0].getText().strip()[16:])
+        temp_specs.append(temp_specs_set[1].getText().strip()[19:])
+        temp_specs.append(temp_specs_set[2].getText().strip()[17:])
+        new_data.append(temp_specs)
+        data.append(new_data)
     driver.quit()
-    print("Num Titles: "+str(len(final_titles)))
-    print("Num Prices: "+str(len(final_costs)))
-    return final_titles, final_costs
+    print("Data Collected: " + keyword + ". Num Collected: " + str(len(data)))
+    return data
 
 
-scrapeNvidia("1660")
+# scrapeNvidia("3060")
