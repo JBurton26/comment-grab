@@ -1,2 +1,2 @@
 import scraper
-scraper.scrapeNvidia("1660")
+scraper.scrapeNvidia("2060")
