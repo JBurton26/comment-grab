@@ -1,20 +1,18 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.common.exceptions import NoSuchElementException
 import time, sqlite3
 from os import path
 
 
 def scrapeNvidia(keyword):
+    print("start")
     data = []
-    options = FirefoxOptions()
-    fp = webdriver.FirefoxProfile()
-    fp.set_preference("javascript.enabled", True)
+    options = ChromeOptions()
     options.add_argument("--headless")
-    driver = webdriver.Firefox(firefox_profile=fp, options=options)
+    driver = webdriver.Chrome(options=options)
     driver.get("""https://www.nvidia.com/en-gb/shop/geforce/?page=1&limit=100&locale=en-gb&search="""+keyword+"""&sorting=fg""")
-    time.sleep(3)
     # Code not necessary for running
     """
     for x in range(1):
@@ -60,4 +58,7 @@ def scrapeNvidia(keyword):
     return data
 
 
-# scrapeNvidia("3060")
+
+
+
+#scrapeNvidia("3060")
