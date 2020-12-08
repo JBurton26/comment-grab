@@ -2,8 +2,58 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.common.exceptions import NoSuchElementException
-import time, sqlite3
+import time, sqlite3, os
 from os import path
+from sqlite3 import Error
+
+
+
+fold = os.getcwd()+"/data"
+db = os.getcwd()+"/data/cheapbase.db"
+
+def init_db():
+    conn = sqlite3.connect(db)
+    query = """CREATE TABLE nvidia_gpu (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                cooling TEXT NOT NULL,
+                clock TEXT NOT NULL,
+                mem INTEGER NOT NULL);"""
+    query2 = """
+                CREATE TABLE nvidida_gpu_prices (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                gpu_id INTEGER NOT NULL REFERENCES nvidia_gpu(id),
+                item_cost REAL NOT NULL,
+                date TEXT NOT NULL);"""
+    cursor = conn.cursor()
+    cursor.execute(query)
+    cursor.execute(query2)
+    conn.commit()
+    conn.close()
+
+
+if os.path.exists(fold):
+    if os.path.isfile(db):
+        try:
+            conn = sqlite3.connect(db)
+            print("DB Connected: "+sqlite3.version)
+        except Error as e:
+            print(e)
+    else:
+        f = open(db, "x")
+        f.close()
+        init_db()
+        print("DB Connected: "+sqlite3.version)
+
+else:
+    try:
+        os.mkdir(fold)
+        f = open(db, "x")
+        f.close()
+        init_db()
+        print("DB Connected: "+sqlite3.version)
+    except OSError as e:
+        print(e)
 
 
 def scrapeNvidia(keyword):
