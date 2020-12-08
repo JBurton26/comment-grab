@@ -1,21 +1,71 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.common.exceptions import NoSuchElementException
-import time, sqlite3
+import time, sqlite3, os
 from os import path
+from sqlite3 import Error
+
+
+
+fold = os.getcwd()+"/data"
+db = os.getcwd()+"/data/cheapbase.sqlite3"
+searchtext = os.getcwd()+"/data/gpus.txt"
+
+
+def init_db():
+    conn = sqlite3.connect(db)
+    query = """CREATE TABLE nvidia_gpu (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                cooling TEXT NOT NULL,
+                clock TEXT NOT NULL,
+                mem INTEGER NOT NULL);"""
+    query2 = """
+                CREATE TABLE nvidia_gpu_prices (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                gpu_id INTEGER NOT NULL REFERENCES nvidia_gpu(id),
+                item_cost REAL NOT NULL,
+                date TEXT NOT NULL);"""
+    cursor = conn.cursor()
+    cursor.execute(query)
+    cursor.execute(query2)
+    conn.commit()
+    conn.close()
+
+
+if os.path.exists(fold):
+    if os.path.isfile(db):
+        try:
+            conn = sqlite3.connect(db)
+            print("DB Connected: "+sqlite3.version)
+        except Error as e:
+            print(e)
+    else:
+        f = open(db, "w")
+        f.close()
+        init_db()
+        print("DB Connected: "+sqlite3.version)
+
+else:
+    try:
+        os.mkdir(fold)
+        f = open(db, "w")
+        f.close()
+        init_db()
+        print("DB Connected: "+sqlite3.version)
+    except OSError as e:
+        print(e)
 
 
 def scrapeNvidia(keyword):
+    print("start")
     data = []
-    options = FirefoxOptions()
-    fp = webdriver.FirefoxProfile()
-    fp.set_preference("javascript.enabled", True)
+    options = ChromeOptions()
     options.add_argument("--headless")
-    driver = webdriver.Firefox(firefox_profile=fp, options=options)
+    driver = webdriver.Chrome(options=options)
     driver.get("""https://www.nvidia.com/en-gb/shop/geforce/?page=1&limit=100&locale=en-gb&search="""+keyword+"""&sorting=fg""")
-    time.sleep(3)
-    # Code not necessary for running
+    # Code not necessary for running - will possibly be useful for future iterations
     """
     for x in range(1):
         try:
@@ -60,4 +110,29 @@ def scrapeNvidia(keyword):
     return data
 
 
-# scrapeNvidia("3060")
+def storage():
+    if (os.path.isfile(searchtext) is False):
+        print("File for searching GPUs is missing, one will be created")
+        f = open(searchtext, "w")
+        f.close()
+        print("File created at: " + searchtext)
+        print("Please populate this file with the model number(s) of the gpu you weant to analyse on each line")
+    else:
+        f = open(searchtext, "r")
+        gpus = f.readlines()
+        if len(gpus) < 1:
+            print("GPU Search file at " + searchtext + " is empty, please add som eitems to look for.")
+            return
+        conn = sqlite3.connect(db)
+        index = 0;
+        for gpu in gpus:
+            cursor = conn.cursor()
+            DATA_NVIDIA = scrapeNvidia(gpu)
+            state = """SELECT count(*) FROM nvidia_gpu WHERE nvidia_gpu.name = '""" + DATA_NVIDIA[index][0] +"""'"""
+            cursor.execute(state)
+            print(cursor.fetchone()[0])
+            index=index+1
+
+
+storage()
+#scrapeNvidia("3060")
