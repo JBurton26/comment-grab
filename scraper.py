@@ -9,7 +9,9 @@ from sqlite3 import Error
 
 
 fold = os.getcwd()+"/data"
-db = os.getcwd()+"/data/cheapbase.db"
+db = os.getcwd()+"/data/cheapbase.sqlite3"
+searchtext = os.getcwd()+"/data/gpus.txt"
+
 
 def init_db():
     conn = sqlite3.connect(db)
@@ -20,7 +22,7 @@ def init_db():
                 clock TEXT NOT NULL,
                 mem INTEGER NOT NULL);"""
     query2 = """
-                CREATE TABLE nvidida_gpu_prices (
+                CREATE TABLE nvidia_gpu_prices (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 gpu_id INTEGER NOT NULL REFERENCES nvidia_gpu(id),
                 item_cost REAL NOT NULL,
@@ -40,7 +42,7 @@ if os.path.exists(fold):
         except Error as e:
             print(e)
     else:
-        f = open(db, "x")
+        f = open(db, "w")
         f.close()
         init_db()
         print("DB Connected: "+sqlite3.version)
@@ -48,7 +50,7 @@ if os.path.exists(fold):
 else:
     try:
         os.mkdir(fold)
-        f = open(db, "x")
+        f = open(db, "w")
         f.close()
         init_db()
         print("DB Connected: "+sqlite3.version)
@@ -63,7 +65,7 @@ def scrapeNvidia(keyword):
     options.add_argument("--headless")
     driver = webdriver.Chrome(options=options)
     driver.get("""https://www.nvidia.com/en-gb/shop/geforce/?page=1&limit=100&locale=en-gb&search="""+keyword+"""&sorting=fg""")
-    # Code not necessary for running
+    # Code not necessary for running - will possibly be useful for future iterations
     """
     for x in range(1):
         try:
@@ -108,7 +110,29 @@ def scrapeNvidia(keyword):
     return data
 
 
+def storage():
+    if (os.path.isfile(searchtext) is False):
+        print("File for searching GPUs is missing, one will be created")
+        f = open(searchtext, "w")
+        f.close()
+        print("File created at: " + searchtext)
+        print("Please populate this file with the model number(s) of the gpu you weant to analyse on each line")
+    else:
+        f = open(searchtext, "r")
+        gpus = f.readlines()
+        if len(gpus) < 1:
+            print("GPU Search file at " + searchtext + " is empty, please add som eitems to look for.")
+            return
+        conn = sqlite3.connect(db)
+        index = 0;
+        for gpu in gpus:
+            cursor = conn.cursor()
+            DATA_NVIDIA = scrapeNvidia(gpu)
+            state = """SELECT count(*) FROM nvidia_gpu WHERE nvidia_gpu.name = '""" + DATA_NVIDIA[index][0] +"""'"""
+            cursor.execute(state)
+            print(cursor.fetchone()[0])
+            index=index+1
 
 
-
+storage()
 #scrapeNvidia("3060")
