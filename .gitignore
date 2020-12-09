@@ -1,7 +1,7 @@
 #Data files and Databases
 *.dat
 results/
-data/
+data/*
 
 #Log Files
 *.log

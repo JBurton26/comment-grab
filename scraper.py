@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import NoSuchElementException
 import time, sqlite3, os
 from os import path
@@ -61,10 +62,11 @@ else:
 def scrapeNvidia(keyword):
     print("start")
     data = []
-    options = ChromeOptions()
+    options = Options()
     options.add_argument("--headless")
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Firefox(options=options)  # CHROME FOR RASPBIAN, FIREFOX FOR WINDOWS
     driver.get("""https://www.nvidia.com/en-gb/shop/geforce/?page=1&limit=100&locale=en-gb&search="""+keyword+"""&sorting=fg""")
+    time.sleep(3)
     # Code not necessary for running - will possibly be useful for future iterations
     """
     for x in range(1):
@@ -121,17 +123,16 @@ def storage():
         f = open(searchtext, "r")
         gpus = f.readlines()
         if len(gpus) < 1:
-            print("GPU Search file at " + searchtext + " is empty, please add som eitems to look for.")
+            print("GPU Search file at " + searchtext + " is empty, please add some items to look for.")
             return
         conn = sqlite3.connect(db)
-        index = 0;
         for gpu in gpus:
-            cursor = conn.cursor()
             DATA_NVIDIA = scrapeNvidia(gpu)
-            state = """SELECT count(*) FROM nvidia_gpu WHERE nvidia_gpu.name = '""" + DATA_NVIDIA[index][0] +"""'"""
-            cursor.execute(state)
-            print(cursor.fetchone()[0])
-            index=index+1
+            for index in range(len(DATA_NVIDIA)):
+                cursor = conn.cursor()
+                state = """SELECT count(*) FROM nvidia_gpu WHERE nvidia_gpu.name = '""" + DATA_NVIDIA[index][0] + """'"""
+                cursor.execute(state)
+                print(cursor.fetchone()[0])
 
 
 storage()
