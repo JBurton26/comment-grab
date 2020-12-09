@@ -132,7 +132,22 @@ def storage():
                 cursor = conn.cursor()
                 state = """SELECT count(*) FROM nvidia_gpu WHERE nvidia_gpu.name = '""" + DATA_NVIDIA[index][0] + """'"""
                 cursor.execute(state)
+                xint = cursor.fetchone()[0]
+                #print(cursor.fetchone())
+                if(xint == 0):
+                    query = """INSERT INTO nvidia_gpu (name, cooling, clock, mem) VALUES ((?),(?),(?),(?));"""
+                    xvar = (DATA_NVIDIA[index][0], DATA_NVIDIA[index][2][0], DATA_NVIDIA[index][2][1], DATA_NVIDIA[index][2][2][:-3],)
+                    conn.execute(query, xvar)
+                    conn.commit()
+                    #print(DATA_NVIDIA[index][2][2][:-3])
+                get_id = """SELECT id FROM nvidia_gpu WHERE nvidia_gpu.name = '""" + DATA_NVIDIA[index][0] + """';"""
+                cursor.execute(get_id)
                 print(cursor.fetchone()[0])
+                query2 = """INSERT INTO nvidia_gpu_prices VALUES (
+                    '""" + DATA_NVIDIA[index][0] + """',
+                    '""" + DATA_NVIDIA[index][2][0] + """',
+                    '""" + DATA_NVIDIA[index][2][1] + """'
+                    """ + DATA_NVIDIA[index][2][2][:-3] + """);"""
 
 
 storage()
