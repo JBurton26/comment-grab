@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.firefox.options import Options
+#from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import NoSuchElementException
 import time
 import sqlite3
@@ -64,7 +64,7 @@ def scrapeNvidia(keyword):
     data = []
     options = Options()
     options.add_argument("--headless")
-    driver = webdriver.Firefox(options=options)  # CHROME FOR RASPBIAN, FIREFOX FOR WINDOWS
+    driver = webdriver.Chrome(options=options)  # CHROME FOR RASPBIAN, FIREFOX FOR WINDOWS
     driver.get("""https://www.nvidia.com/en-gb/shop/geforce/?page=1&limit=100&locale=en-gb&search="""+keyword+"""&sorting=fg""")
     time.sleep(3)
     # Code not necessary for running - will possibly be useful for future iterations
