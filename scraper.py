@@ -3,10 +3,10 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import NoSuchElementException
-import time, sqlite3, os
-from os import path
+import time
+import sqlite3
+import os
 from sqlite3 import Error
-
 
 
 fold = os.getcwd()+"/data"
@@ -133,22 +133,20 @@ def storage():
                 state = """SELECT count(*) FROM nvidia_gpu WHERE nvidia_gpu.name = '""" + DATA_NVIDIA[index][0] + """'"""
                 cursor.execute(state)
                 xint = cursor.fetchone()[0]
-                #print(cursor.fetchone())
                 if(xint == 0):
                     query = """INSERT INTO nvidia_gpu (name, cooling, clock, mem) VALUES ((?),(?),(?),(?));"""
                     xvar = (DATA_NVIDIA[index][0], DATA_NVIDIA[index][2][0], DATA_NVIDIA[index][2][1], DATA_NVIDIA[index][2][2][:-3],)
                     conn.execute(query, xvar)
                     conn.commit()
-                    #print(DATA_NVIDIA[index][2][2][:-3])
                 get_id = """SELECT id FROM nvidia_gpu WHERE nvidia_gpu.name = '""" + DATA_NVIDIA[index][0] + """';"""
                 cursor.execute(get_id)
-                print(cursor.fetchone()[0])
-                query2 = """INSERT INTO nvidia_gpu_prices VALUES (
-                    '""" + DATA_NVIDIA[index][0] + """',
-                    '""" + DATA_NVIDIA[index][2][0] + """',
-                    '""" + DATA_NVIDIA[index][2][1] + """'
-                    """ + DATA_NVIDIA[index][2][2][:-3] + """);"""
+                ccgpu_id = cursor.fetchone()[0]
+                query2 = """INSERT INTO nvidia_gpu_prices (gpu_id, item_cost, date) VALUES (?,?,datetime('now'));"""
+                xvar2 = (ccgpu_id, DATA_NVIDIA[index][1])
+                cursor.execute(query2, xvar2)
+                conn.commit()
+        conn.close()
 
 
 storage()
-#scrapeNvidia("3060")
+# scrapeNvidia("3060")
