@@ -56,7 +56,7 @@ def getSpecCosts(id):
 	cursor=conn.cursor()
 	cursor.execute("""SELECT * FROM nvidia_gpu WHERE id = ?;""", (id,))
 	x = cursor.fetchone()
-	cursor.execute("""SELECT * FROM nvidia_gpu_prices WHERE gpu_id = ? ORDER BY date DESC LIMIT 20;""", (id,))
+	cursor.execute("""SELECT * FROM nvidia_gpu_prices WHERE gpu_id = ? ORDER BY date ASC LIMIT 20;""", (id,))
 	rows = cursor.fetchall()
 	prices = []
 	for row in rows:
@@ -98,9 +98,13 @@ def modelStat(type, model, id):
 	data = getSpecCosts(id)
 	return render_template('spec.html', gpu=data), 200
 
+
+##### TODO Figure out how to plot entire sections ####
+"""
 @app.route('/graph/model/<model>')
 def graphCostTimeModel(model):
 	return "HELLO"
+"""
 @app.route('/graph/<id>')
 def graphCostTimeID(id):
 	data = getSpecCosts(id)
@@ -118,6 +122,8 @@ def graphCostTimeID(id):
 	axis.grid(True)
 	xs = dates
 	axis.plot(xs,ys)
+	axis.set_xticklabels(xs, Rotation='vertical')
+	fig.tight_layout()
 	canvas=FigCan(fig)
 	output = io.BytesIO()
 	canvas.print_png(output)
