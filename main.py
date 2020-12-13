@@ -2,7 +2,13 @@
 import sqlite3
 import os
 import json
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
+import matplotlib as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigCan
+import io
+import pandas as pd
+import datetime
 app = Flask(__name__)
 
 
@@ -50,7 +56,7 @@ def getSpecCosts(id):
 	cursor=conn.cursor()
 	cursor.execute("""SELECT * FROM nvidia_gpu WHERE id = ?;""", (id,))
 	x = cursor.fetchone()
-	cursor.execute("""SELECT * FROM nvidia_gpu_prices WHERE gpu_id = ? ORDER BY date DESC;""", (id,))
+	cursor.execute("""SELECT * FROM nvidia_gpu_prices WHERE gpu_id = ? ORDER BY date DESC LIMIT 20;""", (id,))
 	rows = cursor.fetchall()
 	prices = []
 	for row in rows:
@@ -91,6 +97,34 @@ def typebyno(type, model):
 def modelStat(type, model, id):
 	data = getSpecCosts(id)
 	return render_template('spec.html', gpu=data), 200
+
+@app.route('/graph/model/<model>')
+def graphCostTimeModel(model):
+	return "HELLO"
+@app.route('/graph/<id>')
+def graphCostTimeID(id):
+	data = getSpecCosts(id)
+	prices = []
+	dates = []
+	for item in data['prices']:
+		prices.append(item['cost'])
+		dates.append(item['date'])
+	ys = prices
+	fig = Figure()
+	axis = fig.add_subplot(1,1,1)
+	axis.set_title("Cost Over Time")
+	axis.set_xlabel("Dates")
+	axis.set_ylabel("Cost")
+	axis.grid(True)
+	xs = dates
+	axis.plot(xs,ys)
+	canvas=FigCan(fig)
+	output = io.BytesIO()
+	canvas.print_png(output)
+	response = make_response(output.getvalue())
+	response.mimetype = 'image/png'
+	return response
+
 
 
 if __name__ == "__main__":

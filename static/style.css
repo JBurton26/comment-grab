@@ -24,3 +24,9 @@ td, th {
 	border-left: 1px solid #CCCCCC;
   border-radius: 5px;
 }
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}

@@ -7,6 +7,7 @@
 {% block content %}
       {% if gpu %}
       <h3>Cooling: {{gpu.cooling}}. Clock Speed: {{gpu.clock}}. Mem Size: {{gpu.mem}}.</h3>
+      <h3>Last 20 Values:</h3>
       <table>
         <thead>
           <tr>
@@ -23,6 +24,8 @@
           {% endfor %}
         </tbody>
       </table>
+      {#<a href="{{ url_for('graphCostTimeID', id=gpu.id) }}" class="button">yyyy</a>#}
+      <img src="{{ url_for('graphCostTimeID', id=gpu.id) }}" alt="Image Placeholder" width="49%" class="center">
       {% else %}
         <h1> NO DATA PASSED? </h1>
       {% endif %}
