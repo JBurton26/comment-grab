@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+      {% if gpus %}
+      <table id="table-info">
+        <thead>
+          <tr>
+            <th>id</th>
+            <th>Name</th>
+            <th>Cooling</th>
+            <th>Clock</th>
+            <th>MEM size</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for gpu in gpus %}
+          <tr>
+    	       <td><a href="{{model}}/{{gpu.id}}">{{gpu.id}}</a></td>
+             <td>{{gpu.name}}</a></td>
+             <td>{{gpu.cooling}}</a></td>
+             <td>{{gpu.clock}}</a></td>
+             <td>{{gpu.mem}}</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <h1> NO DATA PASSED? </h1>
+      {% endif %}
+	     <hr>
+	     <h3><a href="{{number}}"class="button">REFRESH LIST</a><a href="/"class="button">HOME</a></h3>
+{% endblock %}

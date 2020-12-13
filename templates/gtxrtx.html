@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+      {% if models %}
+        {% for model in models %}
+          <h3><a href="{{model}}" class="button">{{model}}</a></h3>
+        {% endfor %}
+      {% else %}
+        <h1> NO DATA PASSED? </h1>
+      {% endif %}
+	     <hr>
+	     <h3><a href="{{number}}"class="button">REFRESH LIST</a><a href="/"class="button">HOME</a></h3>
+{% endblock %}

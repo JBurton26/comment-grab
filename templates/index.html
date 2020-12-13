@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+      {% if types %}
+        {% for type in types %}
+  	     <h3><a href="{{type}}" class="button">{{type}}</a></h3>
+        {% endfor %}
+      {% else %}
+        <h1> NO DATA PASSED? </h1>
+      {% endif %}
+	     <hr>
+	     <h3><a href="/type/"class="button">REFRESH LIST</a><a href="/"class="button">HOME</a></h3>
+{% endblock %}

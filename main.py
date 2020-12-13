@@ -1,9 +1,97 @@
 #import scraper
 import sqlite3
-from flask import Flask
+import os
+import json
+from flask import Flask, render_template, request
 app = Flask(__name__)
 
 
+searchtext = os.getcwd()+"/data/gpus.txt"
+
+
+def getGPUs(number):
+	dict = []
+	conn=sqlite3.connect('data/cheapbase.sqlite3')
+	cursor=conn.cursor()
+	term = "%" + number + "%"
+	cursor.execute("""SELECT * FROM nvidia_gpu WHERE name LIKE ?;""", (term,))
+	rows = cursor.fetchall()
+	conn.close()
+	for x in rows:
+		data = {
+			'id' : x[0],
+			'name' : x[1],
+			'cooling': x[2],
+			'clock': x[3],
+			'mem': x[4]
+		}
+		dict.append(data)
+	return dict
+
+
+def getModels(type):
+	types = []
+	if(os.path.isfile(searchtext) is False):
+		print("No")
+	else:
+		f = open(searchtext, "r")
+		f_total = f.readlines()
+		f.close()
+		for line in f_total:
+			words = line.split()
+			if words[0] == type:
+				types.append(line)
+	return types
+
+
+def getSpecCosts(id):
+
+	conn=sqlite3.connect('data/cheapbase.sqlite3')
+	cursor=conn.cursor()
+	cursor.execute("""SELECT * FROM nvidia_gpu WHERE id = ?;""", (id,))
+	x = cursor.fetchone()
+	cursor.execute("""SELECT * FROM nvidia_gpu_prices WHERE gpu_id = ? ORDER BY date DESC;""", (id,))
+	rows = cursor.fetchall()
+	prices = []
+	for row in rows:
+		dpri = {
+			'cost': row[2],
+			'date': row[3]
+		}
+		prices.append(dpri)
+	data = {
+		'id' : x[0],
+		'name' : x[1],
+		'cooling': x[2],
+		'clock': x[3],
+		'mem': x[4],
+		'prices': prices
+	}
+	conn.close()
+	return data
+
 @app.route('/')
-def hello():
-	return "<p>Hello World</p>"
+@app.route('/type')
+def home():
+	return render_template('home.html'), 200
+
+
+@app.route('/type/<type>/')
+def typebygr(type):
+	models = getModels(type)
+	return render_template('gtxrtx.html', models = models), 200
+
+
+@app.route('/type/<type>/<model>')
+def typebyno(type, model):
+	gpus = getGPUs(model)
+	return render_template('number.html', gpus=gpus, model=model), 200
+
+@app.route('/type/<type>/<model>/<id>')
+def modelStat(type, model, id):
+	data = getSpecCosts(id)
+	return render_template('spec.html', gpu=data), 200
+
+
+if __name__ == "__main__":
+	app.run(host='0.0.0.0', port=80, debug=False)
