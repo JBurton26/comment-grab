@@ -1,10 +1,6 @@
-bs4
+beautifulsoup
 selenium
-sqlite3
-os
-json
 flask
 matplotlib
-io
 pandas
 datetime
