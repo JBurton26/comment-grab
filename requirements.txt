@@ -1,2 +1,10 @@
 bs4
 selenium
+sqlite3
+os
+json
+flask
+matplotlib
+io
+pandas
+datetime

@@ -122,7 +122,7 @@ def graphCostTimeID(id):
 	axis.grid(True)
 	xs = dates
 	axis.plot(xs,ys)
-	axis.set_xticklabels(xs, Rotation='vertical')
+	axis.set_xticklabels(xs, rotation='vertical')
 	fig.tight_layout()
 	canvas=FigCan(fig)
 	output = io.BytesIO()
