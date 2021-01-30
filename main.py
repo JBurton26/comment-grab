@@ -56,7 +56,7 @@ def getSpecCosts(id):
 	cursor=conn.cursor()
 	cursor.execute("""SELECT * FROM nvidia_gpu WHERE id = ?;""", (id,))
 	x = cursor.fetchone()
-	cursor.execute("""SELECT * FROM nvidia_gpu_prices WHERE gpu_id = ? ORDER BY date ASC LIMIT 20;""", (id,))
+	cursor.execute("""SELECT * FROM nvidia_gpu_prices WHERE gpu_id = ? ORDER BY date DESC LIMIT 20;""", (id,))
 	rows = cursor.fetchall()
 	prices = []
 	for row in rows:
@@ -113,6 +113,8 @@ def graphCostTimeID(id):
 	for item in data['prices']:
 		prices.append(item['cost'])
 		dates.append(item['date'])
+	prices.reverse()
+	dates.reverse()
 	ys = prices
 	fig = Figure()
 	axis = fig.add_subplot(1,1,1)
