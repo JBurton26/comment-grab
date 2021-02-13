@@ -38,7 +38,7 @@ def test_reddit():
     # For currently unknown reasons, Raspian doesnt like GeckoDriver thus chrome has been used.
     if(OS_TYPE == 'Windows'):
         options = FFOptions()
-        options.add_argument("--headless")
+        #options.add_argument("--headless")
         driver = webdriver.Firefox(options=options)
     elif(OS_TYPE == 'Linux'):
         options = ChOptions()
@@ -49,14 +49,23 @@ def test_reddit():
         print("Ending Program")
         return
     driver.get("""https://www.reddit.com/r/TinyHouses/""")
+    try:
+        for x in range(10):
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)
+    except Exception:
+        print("Problem Encountered")
     page = driver.page_source
     soup = BeautifulSoup(page, 'html5lib')
     titles = soup.find_all('div',{'class':'_1oQyIsiPHYt6nx7VOmd1sz'})
     for title in titles:
         notad = title.find('span',{'class':'_2oEYZXchPfHwcf9mTMGMg8'})
         if(notad is None):
-            item = title.find('h3', {'class': '_eYtD2XCVieq6emjKBH3m'}).getText().strip()
-            print(item)
+            try:
+                item = title.find('h3', {'class': '_eYtD2XCVieq6emjKBH3m'}).getText().strip()
+                print(item)
+            except Exception:
+                continue
 test_reddit()
 
 #<span class="_2oEYZXchPfHwcf9mTMGMg8">promoted</span>
