@@ -38,7 +38,7 @@ def test_reddit():
     # For currently unknown reasons, Raspian doesnt like GeckoDriver thus chrome has been used.
     if(OS_TYPE == 'Windows'):
         options = FFOptions()
-        #options.add_argument("--headless")
+        options.add_argument("--headless")
         driver = webdriver.Firefox(options=options)
     elif(OS_TYPE == 'Linux'):
         options = ChOptions()
@@ -53,6 +53,10 @@ def test_reddit():
     soup = BeautifulSoup(page, 'html5lib')
     titles = soup.find_all('div',{'class':'_1oQyIsiPHYt6nx7VOmd1sz'})
     for title in titles:
-        item = title.find('h3', {'class': '_eYtD2XCVieq6emjKBH3m'})
-        print(item.getText().strip())
+        notad = title.find('span',{'class':'_2oEYZXchPfHwcf9mTMGMg8'})
+        if(notad is None):
+            item = title.find('h3', {'class': '_eYtD2XCVieq6emjKBH3m'}).getText().strip()
+            print(item)
 test_reddit()
+
+#<span class="_2oEYZXchPfHwcf9mTMGMg8">promoted</span>
