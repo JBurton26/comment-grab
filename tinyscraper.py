@@ -6,31 +6,13 @@ from selenium.common.exceptions import NoSuchElementException
 import time
 import os
 import platform
+import sqlite3
+import data_man as dm
 # Declaration of filepaths
 FOLDER = os.getcwd()+"/data"
-DATA_FILE = os.getcwd()+"/data/tinyhousementions.csv"
+DATA_FILE_CSV = os.getcwd()+"/data/tinyhousementions.csv"
+DATA_FILE_DB = os.getcwd()+"/data/tinyhousementions.sqlite3"
 OS_TYPE = platform.system()
-
-# Checks the files exist, creates them if necessary
-if os.path.exists(FOLDER):
-    if os.path.isfile(DATA_FILE):
-        try:
-            print("Data File Found at: " + DATA_FILE)
-        except Error as e:
-            print(e)
-    else:
-        f = open(DATA_FILE, "w")
-        f.close()
-        print("Data File Created at: " + DATA_FILE)
-
-else:
-    try:
-        os.mkdir(FOLDER)
-        f = open(DATA_FILE, "w")
-        f.close()
-        print("Data File and Folder Created.")
-    except OSError as e:
-        print(e)
 
 def test_reddit():
     print("Testing Connection")
@@ -38,7 +20,7 @@ def test_reddit():
     # For currently unknown reasons, Raspian doesnt like GeckoDriver thus chrome has been used.
     if(OS_TYPE == 'Windows'):
         options = FFOptions()
-        #options.add_argument("--headless")
+        options.add_argument("--headless")
         driver = webdriver.Firefox(options=options)
     elif(OS_TYPE == 'Linux'):
         options = ChOptions()
@@ -66,6 +48,7 @@ def test_reddit():
                 print(item)
             except Exception:
                 continue
+dm.file_all(FOLDER, DATA_FILE_DB, DATA_FILE_CSV)
 test_reddit()
 
 #<span class="_2oEYZXchPfHwcf9mTMGMg8">promoted</span>
