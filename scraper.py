@@ -63,7 +63,7 @@ def scrapeNvidia(keyword):
     print("start")
     data = []
     options = Options()
-    options.add_argument("--headless")
+    #options.add_argument("--headless")
     driver = webdriver.Firefox(options=options)  # CHROME FOR RASPBIAN, FIREFOX FOR WINDOWS
     driver.get("""https://www.nvidia.com/en-gb/shop/geforce/?page=1&limit=100&locale=en-gb&search="""+keyword+"""&sorting=fg""")
     time.sleep(3)
@@ -147,6 +147,6 @@ def storage():
                 conn.commit()
         conn.close()
 
-
-storage()
+if __name__ == "__main__":
+    storage()
 # scrapeNvidia("3060")
