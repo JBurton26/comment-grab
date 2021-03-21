@@ -1,7 +1,8 @@
 #Data files and Databases
 *.dat
-results/
-data/*
+data/raw/*
+data/*.sqlite3
+data/*.txt
 
 #Log Files
 *.log
@@ -11,4 +12,4 @@ __pycache__/
 *.pyc
 
 #Authorization
-auth.*
+**/auth.json
