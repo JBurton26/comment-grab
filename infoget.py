@@ -4,19 +4,35 @@ import requests.auth
 import time
 import datetime
 import os
+import logging
 
-filename = "./configs/auth.json"
+authfile = "./configs/auth.json"
 saveloc = "./data/raw/"
+configfile = "./configs/config.json"
+try:
+    f = open(configfile, 'r')
+    settings = json.load(f)
+    f.close()
+except Exception as e:
+    f = open(configfile, 'w')
+    settings = {
+      "logloc": "./logs/runlog.log"
+    }
+    json.dump(settings, f, indent = 4, sort_keys = True)
+    f.close()
+logging.basicConfig(filename=settings['logloc'], encoding='utf-8', level=logging.DEBUG)
+logging.info("\n\nSession Start: " + str(datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S')))
 
 def getAuths():
     try:
         print("Auths File Found")
-        f = open(filename, 'r')
+        logging.info("Auths File Found")
+        f = open(authfile, 'r')
         credentials = json.load(f)
         f.close()
         return credentials
     except Exception as e:
-        f = open(filename, 'w')
+        f = open(authfile, 'w')
         credentials = {
           "username":"",
           "psk":"",
@@ -27,7 +43,8 @@ def getAuths():
         json.dump(credentials, f, indent = 4, sort_keys = True)
         f.close()
         print("auth.json file missing, one has been created for you.\nPlease populate this file with the appropriate values.")
-        print("Filepath: "+os.getcwd()+"/auth.json")
+        print("Filepath: "+os.getcwd()+"\configs\\auth.json")
+        logging.info("auths.json file not found, new created at: " + os.getcwd() + "/auth.json")
         return None
 
 def getOAuthToken(creds):
@@ -36,49 +53,56 @@ def getOAuthToken(creds):
         post_data = {"grant_type": "password", "username": creds['username'], "password": creds['psk']}
         headers = {"User-Agent": creds['userAgent']}
         res = requests.post("https://www.reddit.com/api/v1/access_token", auth=client_auth, data=post_data, headers=headers)
-        print("Response Status Code: ", res.status_code)
+        print("Response Status Code: ", res.status_code) # requests has in built logging set up
         return res
     except Exception as e:
         print(e)
+        logging.error(e)
         return None
 
-def getComments(creds, token):
+def getComments(creds, token, input):
     headers = {"Authorization": ("bearer "+token.json()['access_token']), "User-Agent": creds['userAgent']}
-    response = requests.get("https://oauth.reddit.com/r/TinyHouses/top/?t=all&limit=3", headers=headers)
-    print(json.dumps(response.json(), indent=4))
+    response = requests.get("https://oauth.reddit.com/r/TinyHouses/top/?t=all&limit=10", headers=headers)
     resJSON = response.json()
-    """
-    for item in resJSON['data']['children']:
-        print(item['data']['permalink'])
-        #print("")
-    """
-    link = "https://oauth.reddit.com" + resJSON['data']['children'][0]['data']['permalink']
-    response = requests.get(link, headers=headers)
-    #print(json.dumps(response.json()[1], indent=4))
-    #print(json.dumps(response.json()[0], indent=4))
-
-    y = len(response.json()[1]['data']['children'])
-    #print("replies: " + str(response.json()[1]['data']['children'][y-1]) + "\n")
-    for i in range(len(response.json()[1]['data']['children'])):
-        #None
-        #for key in response.json()[1]['data']['children'][i]['data']:
-        #    print(key + ": " + str(response.json()[1]['data']['children'][i]['data'][key]) + "\n")
-        if response.json()[1]['data']['children'][i]['kind'] != 'more':
-
-            comment = {
-                "user": response.json()[1]['data']['children'][i]['data']['author'],
-                "score": response.json()[1]['data']['children'][i]['data']['score'],
-                "body": response.json()[1]['data']['children'][i]['data']['body'],
-                "timestamp": datetime.datetime.fromtimestamp(response.json()[1]['data']['children'][i]['data']['created']).strftime('%Y-%m-%d %H:%M:%S'),
-                "postID": response.json()[1]['data']['children'][i]['data']['id']
-            }
-            #print(json.dumps(comment, indent=4))
+    raw_fold = saveloc + "TinyHouses" + str(datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S'))
+    if not os.path.exists(saveloc):
+        os.mkdir(saveloc)
+    os.mkdir(raw_fold)
+    raw_file = raw_fold + "/posts.json"
+    f = open(raw_file, 'w')
+    json.dump(resJSON, f, indent = 4, sort_keys = True)
+    f.close()
+    logging.info("Raw post information saved. (Raw Reponse JSON.)")
+    print(resJSON)
+    for post in resJSON['data']['children']:
+        link = "https://oauth.reddit.com" + post['data']['permalink']
+        response = requests.get(link, headers=headers)
+        try:
+            raw_file = raw_fold + "/" + post['data']['id'] +"_raw_comments.json"
+            f = open(raw_file, 'w')
+            json.dump(response.json(), f, indent = 4, sort_keys = True)
+            f.close()
+            logging.info("File Saved: " + raw_file)
+        except Exception as e:
+            logging.error(e)
+        #print(response.status_code)
+        y = len(response.json()[1]['data']['children'])
+        for i in range(len(response.json()[1]['data']['children'])):
+            if response.json()[1]['data']['children'][i]['kind'] != 'more':
+                comment = {
+                    "user": response.json()[1]['data']['children'][i]['data']['author'],
+                    "score": response.json()[1]['data']['children'][i]['data']['score'],
+                    "body": response.json()[1]['data']['children'][i]['data']['body'],
+                    "timestamp": datetime.datetime.fromtimestamp(response.json()[1]['data']['children'][i]['data']['created']).strftime('%Y-%m-%d %H:%M:%S'),
+                    "postID": response.json()[1]['data']['children'][i]['data']['id']
+                }
+                #print(json.dumps(comment, indent=4))
 
 
 if __name__ == "__main__":
     credentials = getAuths()
     token = getOAuthToken(credentials)
     if token.status_code == 200:
-        getComments(credentials, token)
+        getComments(credentials, token, None)
     else:
         print("An Error Occurred during token request, response error:", token.status_code)
