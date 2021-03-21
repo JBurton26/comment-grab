@@ -5,9 +5,12 @@ import time
 import datetime
 import os
 
-def getAuths(file_name):
+filename = "./configs/auth.json"
+saveloc = "./data/raw/"
+
+def getAuths():
     try:
-        print("File Found")
+        print("Auths File Found")
         f = open(filename, 'r')
         credentials = json.load(f)
         f.close()
@@ -33,6 +36,7 @@ def getOAuthToken(creds):
         post_data = {"grant_type": "password", "username": creds['username'], "password": creds['psk']}
         headers = {"User-Agent": creds['userAgent']}
         res = requests.post("https://www.reddit.com/api/v1/access_token", auth=client_auth, data=post_data, headers=headers)
+        print("Response Status Code: ", res.status_code)
         return res
     except Exception as e:
         print(e)
@@ -41,7 +45,7 @@ def getOAuthToken(creds):
 def getComments(creds, token):
     headers = {"Authorization": ("bearer "+token.json()['access_token']), "User-Agent": creds['userAgent']}
     response = requests.get("https://oauth.reddit.com/r/TinyHouses/top/?t=all&limit=3", headers=headers)
-    #print(response.json())
+    print(json.dumps(response.json(), indent=4))
     resJSON = response.json()
     """
     for item in resJSON['data']['children']:
@@ -66,16 +70,13 @@ def getComments(creds, token):
                 "score": response.json()[1]['data']['children'][i]['data']['score'],
                 "body": response.json()[1]['data']['children'][i]['data']['body'],
                 "timestamp": datetime.datetime.fromtimestamp(response.json()[1]['data']['children'][i]['data']['created']).strftime('%Y-%m-%d %H:%M:%S'),
-                "postID": response.json()[1]['data']['children'][i]['data']['id']#,
-                #"before": response.json()[1]['data']['children'][i]['before'],
-                #"after": response.json()[1]['data']['children'][i]['after']
+                "postID": response.json()[1]['data']['children'][i]['data']['id']
             }
-            print(json.dumps(comment, indent=4))
+            #print(json.dumps(comment, indent=4))
 
 
 if __name__ == "__main__":
-    filename = "./auth.json"
-    credentials = getAuths(filename)
+    credentials = getAuths()
     token = getOAuthToken(credentials)
     if token.status_code == 200:
         getComments(credentials, token)
