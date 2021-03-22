@@ -5,6 +5,7 @@ import time
 import datetime
 import os
 import logging
+from extracter import json_extract
 
 authfile = "./configs/auth.json"
 saveloc = "./data/raw/"
@@ -73,10 +74,13 @@ def getComments(creds, token, input):
     json.dump(resJSON, f, indent = 4, sort_keys = True)
     f.close()
     logging.info("Raw post information saved. (Raw Reponse JSON.)")
-    print(resJSON)
+    #print(resJSON)
+
+
     for post in resJSON['data']['children']:
-        link = "https://oauth.reddit.com" + post['data']['permalink']
+        link = "https://oauth.reddit.com" + post['data']['permalink'] + "/?limit=300"
         response = requests.get(link, headers=headers)
+        #print(json.dumps(response.json(), indent = 4, sort_keys = True))
         try:
             raw_file = raw_fold + "/" + post['data']['id'] +"_raw_comments.json"
             f = open(raw_file, 'w')
@@ -86,6 +90,8 @@ def getComments(creds, token, input):
         except Exception as e:
             logging.error(e)
         #print(response.status_code)
+        """
+        comms = []
         y = len(response.json()[1]['data']['children'])
         for i in range(len(response.json()[1]['data']['children'])):
             if response.json()[1]['data']['children'][i]['kind'] != 'more':
@@ -96,8 +102,29 @@ def getComments(creds, token, input):
                     "timestamp": datetime.datetime.fromtimestamp(response.json()[1]['data']['children'][i]['data']['created']).strftime('%Y-%m-%d %H:%M:%S'),
                     "postID": response.json()[1]['data']['children'][i]['data']['id']
                 }
-                #print(json.dumps(comment, indent=4))
 
+                #print(json.dumps(comment, indent=4))
+        print(len(comms))
+        """
+        #authors = json_extract(response.json(), 'author')
+        #print(len(com2))
+        #print(com2[2])
+        #scores = json_extract(response.json(), 'score')
+        #print(len(com3))
+        #print(com3[2])
+        bodies = json_extract(response.json(), 'body')
+        print(len(bodies))
+        #print(com4[1])
+        """
+        for xi in range(len(bodies)):
+            #if authors[xi+1] == "[deleted]":
+            com = {
+                "user": authors[xi+1],
+                "score": scores[xi+1],
+                "body": bodies[xi]
+            }
+            #print(json.dumps(com, indent=4))
+            """
 
 if __name__ == "__main__":
     credentials = getAuths()
