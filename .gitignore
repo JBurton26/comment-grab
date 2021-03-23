@@ -1,6 +1,7 @@
 #Data files and Databases
 *.dat
-data/raw/*/*.json
+data/raw/
+data/processed/
 data/*.sqlite3
 data/*.txt
 

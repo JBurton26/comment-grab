@@ -5,10 +5,11 @@ import time
 import datetime
 import os
 import logging
-from extracter import json_extract
+from extracter import json_extract, json_get_obj
 
 authfile = "./configs/auth.json"
 saveloc = "./data/raw/"
+processed = "./data/processed/"
 configfile = "./configs/config.json"
 try:
     f = open(configfile, 'r')
@@ -63,13 +64,17 @@ def getOAuthToken(creds):
 
 def getComments(creds, token, input):
     headers = {"Authorization": ("bearer "+token.json()['access_token']), "User-Agent": creds['userAgent']}
-    response = requests.get("https://oauth.reddit.com/r/TinyHouses/top/?t=all&limit=10", headers=headers)
+    response = requests.get("https://oauth.reddit.com/r/TinyHouses/top/?t=year&limit=10", headers=headers)
     resJSON = response.json()
-    raw_fold = saveloc + "TinyHouses" + str(datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S'))
+    raw_fold = saveloc + "TinyHouses" + str(datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S')) +"/"
+    processed_fold = processed + "TinyHouses" + str(datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S'))+"/"
     if not os.path.exists(saveloc):
         os.mkdir(saveloc)
+    elif not os.path.exists(processed):
+        os.mkdir(processed)
     os.mkdir(raw_fold)
-    raw_file = raw_fold + "/posts.json"
+    os.mkdir(processed_fold)
+    raw_file = raw_fold + "posts.json"
     f = open(raw_file, 'w')
     json.dump(resJSON, f, indent = 4, sort_keys = True)
     f.close()
@@ -78,6 +83,7 @@ def getComments(creds, token, input):
 
 
     for post in resJSON['data']['children']:
+        #print(json.dumps(post, indent = 4, sort_keys = True))
         link = "https://oauth.reddit.com" + post['data']['permalink'] + "/?limit=300"
         response = requests.get(link, headers=headers)
         #print(json.dumps(response.json(), indent = 4, sort_keys = True))
@@ -89,42 +95,51 @@ def getComments(creds, token, input):
             logging.info("File Saved: " + raw_file)
         except Exception as e:
             logging.error(e)
-        #print(response.status_code)
-        """
-        comms = []
-        y = len(response.json()[1]['data']['children'])
-        for i in range(len(response.json()[1]['data']['children'])):
-            if response.json()[1]['data']['children'][i]['kind'] != 'more':
-                comment = {
-                    "user": response.json()[1]['data']['children'][i]['data']['author'],
-                    "score": response.json()[1]['data']['children'][i]['data']['score'],
-                    "body": response.json()[1]['data']['children'][i]['data']['body'],
-                    "timestamp": datetime.datetime.fromtimestamp(response.json()[1]['data']['children'][i]['data']['created']).strftime('%Y-%m-%d %H:%M:%S'),
-                    "postID": response.json()[1]['data']['children'][i]['data']['id']
-                }
 
-                #print(json.dumps(comment, indent=4))
-        print(len(comms))
-        """
-        #authors = json_extract(response.json(), 'author')
-        #print(len(com2))
-        #print(com2[2])
-        #scores = json_extract(response.json(), 'score')
-        #print(len(com3))
-        #print(com3[2])
-        bodies = json_extract(response.json(), 'body')
-        print(len(bodies))
-        #print(com4[1])
-        """
-        for xi in range(len(bodies)):
-            #if authors[xi+1] == "[deleted]":
-            com = {
-                "user": authors[xi+1],
-                "score": scores[xi+1],
-                "body": bodies[xi]
-            }
-            #print(json.dumps(com, indent=4))
-            """
+        ids = json_extract(response.json(), 'id')
+        ids.pop(0)
+        ids.pop(0)
+
+        ids = [ x for x in ids if x != "_"]
+
+
+        post_id = post['data']['id']
+        com_new = []
+        for x in ids:
+            try:
+                obj = json_get_obj(response.json(), x)
+                com = {
+                    "user": obj[0]['author'],
+                    "score": obj[0]['score'],
+                    "body": obj[0]['body'],
+                    "parent": obj[0]['parent_id'],
+                    "id": "t1_" + obj[0]['id'],
+                    "created":datetime.datetime.fromtimestamp(obj[0]['created']).strftime('%Y-%m-%d %H:%M:%S')
+                }
+                com_new.append(com)
+            except Exception as e:
+                print(e)
+        corrected_com = com_new[::-1]
+
+        comments = {
+            "user":post['data']['author'],
+            "created": datetime.datetime.fromtimestamp(post['data']["created"]).strftime('%Y-%m-%d %H:%M:%S'),
+            "permalink": "www.reddit.com" + post['data']['permalink'],
+            "score": post['data']['score'],
+            "name": post['data']['name'],
+            "title": post['data']['title'],
+            "upvote_ratio": post['data']['upvote_ratio'],
+            "images":post['data']['url'],
+            "xcomments":corrected_com
+        }
+
+        #print(json.dumps(comments, indent = 4, sort_keys = True))
+        processed_file = processed_fold + post['data']['name'] + ".json"
+        f = open(processed_file, 'w')
+        json.dump(comments, f, indent = 4, sort_keys = True)
+        f.close()
+
+
 
 if __name__ == "__main__":
     credentials = getAuths()

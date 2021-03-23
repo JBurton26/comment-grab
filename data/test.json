@@ -1,0 +1,52 @@
+{
+    "data": {
+        "name": "test",
+        "id": 1,
+        "children": [
+          {
+            "data": {
+                "name": "test1",
+                "id": 2,
+                "children": [
+                    {
+                      "data": {
+                          "name": "test2.1",
+                          "id": 3,
+                          "children": []
+                      }
+                    },
+                    {
+                      "data": {
+                          "name": "test2.143",
+                          "id": 4,
+                          "children": []
+                      }
+                    }
+                  ]
+                }
+              },{
+                "data": {
+                    "name": "test56",
+                    "id": 6576534,
+                    "children": [
+                        {
+                          "data": {
+                              "name": "test45",
+                              "id": 743547,
+                              "children": []
+                          }
+                        },
+                        {
+                          "data": {
+                              "name": "test645",
+                              "id": 123,
+                              "children": []
+                          }
+                        }
+                      ]
+                    }
+                  }
+
+        ]
+    }
+}
