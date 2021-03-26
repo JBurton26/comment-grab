@@ -1,12 +1,8 @@
-"""Extract nested values from a JSON tree."""
 import json
-# Code taken from From: https://hackersandslackers.com/extract-data-from-complex-json-python/ on 22/03/2021.
+# Code adapted from From: https://hackersandslackers.com/extract-data-from-complex-json-python/ on 22/03/2021.
 def json_extract(obj, search):
-    """Recursively fetch values from nested JSON."""
     arr = []
     def extract(obj, arr, search):
-
-        """Recursively search for values of key in JSON tree."""
         if isinstance(obj, dict):
             for k, v in obj.items():
                 if k == "all_awardings":
@@ -43,6 +39,9 @@ def json_get_obj(obj, id):
     return ret
 
 if __name__ == "__main__":
+    ##########
+    #testing##
+    ##########
     f = open("./data/test.json", "r")
     tests = json.load(f)
     f.close()
