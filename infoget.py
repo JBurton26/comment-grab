@@ -101,9 +101,7 @@ def getComments(inp):
             response = requests.get(link, headers=headers)
             raw_file = raw_fold + "/" + post['data']['id'] +"_raw_comments.json"
             f = open(raw_file, 'w')
-            respii = {
-                #"comments":response.json()
-            }
+
             json.dump(response.json(), f, indent = 4, sort_keys = True)
             f.close()
 
@@ -120,6 +118,7 @@ def getComments(inp):
                 "score": post['data']['score'],
                 "name": post_id,
                 "title": post['data']['title'],
+                "bodytext": post['data']['selftext'],
                 "upvote_ratio": post['data']['upvote_ratio'],
                 "images":post['data']['url'],
                 "xcomments":[]
@@ -152,7 +151,7 @@ def getComments(inp):
             convJSONtoCSV(comments, processed_CSV)
             logging.info("Processed CSV information saved: " + post_id)
             #print("Processed CSV information saved: " + post_id)
-        print("Finished Collecting")
+        print("Finished Collecting: "+str(len(resJSON['data']['children']))+" posts.")
         return 0
     except KeyError as e:
         #print(json.dumps(obj, indent = 4))
