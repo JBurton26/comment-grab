@@ -2,13 +2,14 @@ import json
 # Code adapted from From: https://hackersandslackers.com/extract-data-from-complex-json-python/ on 22/03/2021.
 def json_extract(obj, search):
     arr = []
+    banned_obj = ["crosspost_parent_list", "all_awardings", "gallery_data", "media_metadata"]
     def extract(obj, arr, search):
         if isinstance(obj, dict):
             for k, v in obj.items():
                 if k == "all_awardings":
                     continue
                 elif isinstance(v, (dict, list)):
-                    if k == "all_awardings" or k == "gallery_data" or k == "media_metadata":
+                    if k in banned_obj:
                         continue
                     extract(v, arr, search)
                 elif k == search:

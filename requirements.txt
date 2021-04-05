@@ -3,4 +3,4 @@ selenium
 flask
 matplotlib
 pandas
-tk
+tkinter

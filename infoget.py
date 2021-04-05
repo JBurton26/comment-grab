@@ -102,59 +102,63 @@ def getComments(inp):
             raw_file = raw_fold + "/" + post['data']['id'] +"_raw_comments.json"
             f = open(raw_file, 'w')
             respii = {
-                "comments":response.json()
+                #"comments":response.json()
             }
-            json.dump(respii, f, indent = 4, sort_keys = True)
+            json.dump(response.json(), f, indent = 4, sort_keys = True)
             f.close()
-            processed_file = processed_fold + post['data']['name']
+
             logging.info("File Saved: " + raw_file)
             ids = json_extract(response.json(), 'id')
-            ids.pop(0)
-            ids.pop(0)
-            ids = [ x for x in ids if (x != "_")]
             post_id = post['data']['id']
+            ids.remove(post_id)
+            ids = [ x for x in ids if (x != "_" and x.islower())]
 
             comments = {
                 "user":post['data']['author'],
                 "created": datetime.datetime.fromtimestamp(post['data']["created"]).strftime('%Y-%m-%d %H:%M:%S'),
                 "permalink": "www.reddit.com" + post['data']['permalink'],
                 "score": post['data']['score'],
-                "name": post['data']['name'],
+                "name": post_id,
                 "title": post['data']['title'],
                 "upvote_ratio": post['data']['upvote_ratio'],
                 "images":post['data']['url'],
                 "xcomments":[]
             }
-
-            com_new = []
-            for x in ids:
-                obj = json_get_obj(response.json(), x)
-                if 'author' not in obj[0].keys():
-                    continue
-                com = {
-                    "user": obj[0]['author'],
-                    "score": obj[0]['score'],
-                    "body": obj[0]['body'],
-                    "parentComment": obj[0]['parent_id'],
-                    "id": "t1_" + obj[0]['id'],
-                    "created":datetime.datetime.fromtimestamp(obj[0]['created']).strftime('%Y-%m-%d %H:%M:%S')
-                }
-                com_new.append(com)
-            corrected_com = com_new[::-1]
-            comments['xcomments'] = corrected_com
-
+            if len(ids) != 0:
+                com_new = []
+                for x in ids:
+                    obj = json_get_obj(response.json(), x)
+                    if 'author' not in obj[0].keys():
+                        continue
+                    com = {
+                        "user": obj[0]['author'],
+                        "score": obj[0]['score'],
+                        "body": obj[0]['body'],
+                        "parentComment": obj[0]['parent_id'],
+                        "id": "t1_" + obj[0]['id'],
+                        "created":datetime.datetime.fromtimestamp(obj[0]['created']).strftime('%Y-%m-%d %H:%M:%S')
+                    }
+                    com_new.append(com)
+                corrected_com = com_new[::-1]
+                comments['xcomments'] = corrected_com
+            processed_file = processed_fold + post_id
             processed_JSON = processed_file + ".json"
             processed_CSV = processed_file + ".csv"
             f = open(processed_JSON, 'w')
             json.dump(comments, f, indent = 4, sort_keys = True)
             f.close()
             logging.info("Processed JSON information saved: " + post_id)
-            print("Processed JSON information saved: " + post_id)
+            #print("Processed JSON information saved: " + post_id)
             convJSONtoCSV(comments, processed_CSV)
             logging.info("Processed CSV information saved: " + post_id)
-            print("Processed CSV information saved: " + post_id)
+            #print("Processed CSV information saved: " + post_id)
         print("Finished Collecting")
         return 0
+    except KeyError as e:
+        #print(json.dumps(obj, indent = 4))
+        print(post_id)
+        print(x)
+        print(ids)
     except Exception as e2:
         print(e2)
         logging.error("Exception occurred", exc_info=True)
@@ -162,10 +166,10 @@ def getComments(inp):
 
 
 if __name__ == "__main__":
-    subreddits = ["TinyHouses", "tinyhouse", "factorio"]
+    subreddits = [ "TinyHouses","tinyhouse", "tinyhomes"] #
     inp = {
         "sorting":"top",
-        "limit": 3
+        "limit": 100
     }
     for subreddit in subreddits:
         inp['subreddit'] = subreddit
