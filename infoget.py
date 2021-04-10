@@ -7,7 +7,7 @@ import os
 import logging
 from extracter import json_extract, json_get_obj
 from csvconverter import convJSONtoCSV
-
+from tqdm import tqdm
 
 authfile = "./configs/auth.json"
 saveloc = "./data/raw/"
@@ -72,7 +72,9 @@ def getOAuthToken():
 
 def getComments(inp):
     try:
+
         creds, token = getOAuthToken()
+
         if creds == None:
             raise ValueError("Credentials file has no values")
         elif token == None:
@@ -82,6 +84,7 @@ def getComments(inp):
         headers = {"Authorization": ("bearer "+token.json()['access_token']), "User-Agent": creds['userAgent']}
         req = "https://oauth.reddit.com/r/" + inp['subreddit'] + "/" + inp['sorting'] + "/?t=year&limit=" + str(inp['limit'])
         response = requests.get(req, headers=headers)
+
         resJSON = response.json()
         raw_fold = saveloc + inp['subreddit'] + str(datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S')) +"/"
         processed_fold = processed + inp['subreddit'] + str(datetime.datetime.today().strftime('%Y-%m-%d-%H-%M-%S'))+"/"
@@ -91,11 +94,13 @@ def getComments(inp):
             os.mkdir(processed)
         os.mkdir(raw_fold)
         os.mkdir(processed_fold)
+
         raw_file = raw_fold + "posts.json"
         f = open(raw_file, 'w')
         json.dump(resJSON, f, indent = 4, sort_keys = True)
         f.close()
         logging.info("Raw post information saved. (Raw Reponse JSON.)")
+
         for post in resJSON['data']['children']:
             link = "https://oauth.reddit.com" + post['data']['permalink'] + "/?limit=300"
             response = requests.get(link, headers=headers)
@@ -151,7 +156,9 @@ def getComments(inp):
             convJSONtoCSV(comments, processed_CSV)
             logging.info("Processed CSV information saved: " + post_id)
             #print("Processed CSV information saved: " + post_id)
+
         print("Finished Collecting: "+str(len(resJSON['data']['children']))+" posts.")
+
         return 0
     except KeyError as e:
         #print(json.dumps(obj, indent = 4))
@@ -168,7 +175,7 @@ if __name__ == "__main__":
     subreddits = [ "TinyHouses","tinyhouse", "tinyhomes"] #
     inp = {
         "sorting":"top",
-        "limit": 100
+        "limit": 10
     }
     for subreddit in subreddits:
         inp['subreddit'] = subreddit

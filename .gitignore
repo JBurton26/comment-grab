@@ -4,7 +4,10 @@ data/raw/
 data/processed/
 data/*.sqlite3
 data/*.txt
-
+data/*
+!data/README.md
+!data/test.json
+**.zip
 #Log Files
 **/*.log
 
