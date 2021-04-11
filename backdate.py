@@ -3,7 +3,7 @@ from csvconverter import convJSONtoCSV
 import os
 import time
 import datetime
-DATA_FOLDER = "./data/data_for_jade/processed/"
+DATA_FOLDER = ""
 
 def main():
     names  = os.listdir(DATA_FOLDER)
