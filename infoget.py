@@ -7,7 +7,6 @@ import os
 import logging
 from extracter import json_extract, json_get_obj
 from csvconverter import convJSONtoCSV
-from tqdm import tqdm
 
 authfile = "./configs/auth.json"
 saveloc = "./data/raw/"
@@ -82,6 +81,7 @@ def getComments(inp):
         elif token.status_code != 200:
             raise Exception("Authentication values were not correct or were empty.")
         headers = {"Authorization": ("bearer "+token.json()['access_token']), "User-Agent": creds['userAgent']}
+        #TODO implement more sort types
         req = "https://oauth.reddit.com/r/" + inp['subreddit'] + "/" + inp['sorting'] + "/?t=year&limit=" + str(inp['limit'])
         response = requests.get(req, headers=headers)
 
